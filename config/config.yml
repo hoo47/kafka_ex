@@ -1,0 +1,14 @@
+kafka:
+  brokers:
+    - localhost:9092
+  consumer:
+    group_id: app-events-group
+    auto_offset_reset: oldest
+  topics:
+    app_events: app.events
+
+schema_registry:
+  url: http://localhost:8081
+  subjects:
+    app_install: app.events-AppInstallEvent
+    app_uninstall: app.events-AppUninstallEvent 

@@ -7,15 +7,19 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/hoo47/kafka_ex/internal/domain/events"
-	"google.golang.org/protobuf/proto"
+	"github.com/hoo47/kafka_ex/internal/schema"
 )
 
 type OutboxEventPublisher struct {
-	db *sql.DB
+	db    *sql.DB
+	codec *schema.Codec
 }
 
-func NewOutboxEventPublisher(db *sql.DB) *OutboxEventPublisher {
-	return &OutboxEventPublisher{db: db}
+func NewOutboxEventPublisher(db *sql.DB, codec *schema.Codec) *OutboxEventPublisher {
+	return &OutboxEventPublisher{
+		db:    db,
+		codec: codec,
+	}
 }
 
 func (p *OutboxEventPublisher) Publish(ctx context.Context, event events.Event) error {
@@ -49,9 +53,13 @@ func (p *OutboxEventPublisher) PublishAll(ctx context.Context, events []events.E
 }
 
 func (p *OutboxEventPublisher) saveEvent(ctx context.Context, tx *sql.Tx, event events.Event) error {
-	payload, err := proto.Marshal(event.ToProto())
+	// Proto 메시지로 변환
+	protoMsg := event.ToProto()
+
+	// Schema Registry 형식으로 직렬화
+	payload, err := p.codec.Serialize(event.Type(), protoMsg)
 	if err != nil {
-		return fmt.Errorf("failed to marshal event: %w", err)
+		return fmt.Errorf("failed to serialize event: %w", err)
 	}
 
 	query := `

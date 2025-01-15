@@ -8,14 +8,40 @@ import (
 	"syscall"
 
 	"github.com/IBM/sarama"
+	"github.com/hoo47/kafka_ex/internal/config"
 	"github.com/hoo47/kafka_ex/internal/events"
 	"github.com/hoo47/kafka_ex/internal/events/handlers"
 	"github.com/hoo47/kafka_ex/internal/kafka"
+	"github.com/hoo47/kafka_ex/internal/schema"
 	pkgevents "github.com/hoo47/kafka_ex/pkg/events"
 )
 
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+
+	// 설정 로드
+	cfg, err := config.Load("config/config.yml")
+	if err != nil {
+		logger.Error("Failed to load config", "error", err)
+		os.Exit(1)
+	}
+
+	// Schema Registry 설정
+	registry := schema.NewSchemaRegistry(cfg.SchemaRegistry.URL)
+	registry.RegisterPrototype("AppInstallEvent", &pkgevents.AppInstallEvent{})
+	registry.RegisterPrototype("AppUninstallEvent", &pkgevents.AppUninstallEvent{})
+
+	subjects := map[string]string{
+		"AppInstallEvent":   cfg.SchemaRegistry.Subjects.AppInstall,
+		"AppUninstallEvent": cfg.SchemaRegistry.Subjects.AppUninstall,
+	}
+	if err := registry.RegisterSchemas(subjects); err != nil {
+		logger.Error("Failed to register schemas", "error", err)
+		os.Exit(1)
+	}
+
+	// Codec 생성
+	codec := schema.NewCodec(registry)
 
 	// Kafka 설정
 	config := sarama.NewConfig()
@@ -36,10 +62,10 @@ func main() {
 	)
 
 	// Consumer 생성
-	consumer := kafka.NewConsumer(router, logger)
+	consumer := kafka.NewConsumer(router, logger, codec)
 
 	// Consumer 그룹 생성
-	group, err := sarama.NewConsumerGroup([]string{"localhost:9092"}, "app-events-group", config)
+	group, err := sarama.NewConsumerGroup(cfg.Kafka.Brokers, cfg.Kafka.Consumer.GroupID, config)
 	if err != nil {
 		logger.Error("Error creating consumer group", "error", err)
 		os.Exit(1)
@@ -52,7 +78,7 @@ func main() {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 
-	topics := []string{"app.events"}
+	topics := []string{cfg.Kafka.Topics.AppEvents}
 
 	go func() {
 		for {

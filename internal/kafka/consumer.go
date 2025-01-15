@@ -7,17 +7,20 @@ import (
 
 	"github.com/IBM/sarama"
 	"github.com/hoo47/kafka_ex/internal/events"
+	"github.com/hoo47/kafka_ex/internal/schema"
 )
 
 type Consumer struct {
 	router *events.EventRouter
 	logger *slog.Logger
+	codec  *schema.Codec
 }
 
-func NewConsumer(router *events.EventRouter, logger *slog.Logger) *Consumer {
+func NewConsumer(router *events.EventRouter, logger *slog.Logger, codec *schema.Codec) *Consumer {
 	return &Consumer{
 		router: router,
 		logger: logger,
+		codec:  codec,
 	}
 }
 
@@ -45,7 +48,13 @@ func (c *Consumer) handleMessage(ctx context.Context, msg *sarama.ConsumerMessag
 		return fmt.Errorf("message missing type header")
 	}
 
-	return c.router.HandleMessage(ctx, eventType, msg.Value)
+	// Schema Registry 형식으로 역직렬화
+	event, err := c.codec.Deserialize(msg.Value, eventType)
+	if err != nil {
+		return fmt.Errorf("failed to deserialize message: %w", err)
+	}
+
+	return c.router.HandleMessage(ctx, eventType, event)
 }
 
 func getHeaderValue(headers []*sarama.RecordHeader, key string) string {
