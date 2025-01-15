@@ -4,6 +4,8 @@ go 1.21
 
 require (
 	github.com/IBM/sarama v1.42.1
+	github.com/google/uuid v1.6.0
+	github.com/lib/pq v1.10.9
 	google.golang.org/protobuf v1.32.0
 )
 
