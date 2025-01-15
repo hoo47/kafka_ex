@@ -4,13 +4,13 @@ package events;
 option go_package = "pkg/events";
 
 message AppInstallEvent {
-    string app_id = 1;
-    string channel_id = 2;
-    string manager_id = 3;
+    string app_id = 1 [json_name = "appID"];
+    string channel_id = 2 [json_name = "channelID"];
+    string manager_id = 3 [json_name = "managerID"];
 }
 
 message AppUninstallEvent {
-    string app_id = 1;
-    string channel_id = 2;
-    string manager_id = 3;
+    string app_id = 1 [json_name = "appID"];
+    string channel_id = 2 [json_name = "channelID"];
+    string manager_id = 3 [json_name = "managerID"];
 } 

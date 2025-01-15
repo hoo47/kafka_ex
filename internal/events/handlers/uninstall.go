@@ -30,9 +30,8 @@ func (h *AppUninstallHandler) Handle(ctx context.Context, msg proto.Message) err
 
 	h.logger.Info("handling app uninstall event",
 		"app_id", event.AppId,
-		"device_id", event.DeviceId,
-		"uninstalled_at", event.UninstalledAt,
-		"reason", event.Reason)
+		"channel_id", event.ChannelId,
+		"manager_id", event.ManagerId)
 
 	return nil
 }

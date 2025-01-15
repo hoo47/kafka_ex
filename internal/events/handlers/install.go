@@ -29,8 +29,8 @@ func (h *AppInstallHandler) Handle(ctx context.Context, msg proto.Message) error
 
 	h.logger.Info("handling app install event",
 		"app_id", event.AppId,
-		"device_id", event.DeviceId,
-		"installed_at", event.InstalledAt)
+		"channel_id", event.ChannelId,
+		"manager_id", event.ManagerId)
 
 	return nil
 }
