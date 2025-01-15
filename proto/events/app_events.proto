@@ -7,13 +7,15 @@ import "google/protobuf/timestamp.proto";
 
 message AppInstallEvent {
     string app_id = 1;
-    string device_id = 2;
-    google.protobuf.Timestamp installed_at = 3;
+    string channel_id = 2;
+    string manager_id = 3;
+    google.protobuf.Timestamp installed_at = 4;
 }
 
 message AppUninstallEvent {
     string app_id = 1;
-    string device_id = 2;
-    google.protobuf.Timestamp uninstalled_at = 3;
-    optional string reason = 4;
+    string channel_id = 2;
+    string manager_id = 3;
+    google.protobuf.Timestamp uninstalled_at = 4;
+    optional string reason = 5;
 } 

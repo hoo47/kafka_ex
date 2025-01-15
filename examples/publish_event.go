@@ -29,7 +29,8 @@ func main() {
 	// 앱 설치 이벤트 생성
 	installEvent := pkgevents.AppInstallEvent{
 		AppId:       "app123",
-		DeviceId:    "device456",
+		ChannelId:   "channel456",
+		ManagerId:   "manager789",
 		InstalledAt: timestamppb.New(time.Now()),
 	}
 
@@ -47,7 +48,8 @@ func main() {
 	// 여러 이벤트 동시 발행 예시
 	uninstallEvent := pkgevents.AppUninstallEvent{
 		AppId:         "app123",
-		DeviceId:      "device456",
+		ChannelId:     "channel456",
+		ManagerId:     "manager789",
 		UninstalledAt: timestamppb.New(time.Now()),
 		Reason:        proto.String("user_request"),
 	}
